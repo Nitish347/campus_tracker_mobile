@@ -7,6 +7,8 @@ class Vehicle {
     required this.speed,
     required this.status,
     required this.students,
+    required this.x,
+    required this.y,
   });
 
   final String id;
@@ -16,4 +18,6 @@ class Vehicle {
   final num speed;
   final String status;
   final int students;
+  final num x;
+  final num y;
 }

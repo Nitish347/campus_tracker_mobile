@@ -10,6 +10,24 @@ import '../../domain/entities/student.dart';
 import '../../domain/entities/vehicle.dart';
 
 class CampusRemoteDataSource {
+  Future<String> resolveApiBaseUrl() async {
+    Object? lastError;
+    for (final baseUrl in apiBaseUrls.where((url) => url.isNotEmpty)) {
+      try {
+        final response = await http
+            .get(Uri.parse('$baseUrl/health'))
+            .timeout(const Duration(seconds: 4));
+        if (response.statusCode == 200) return baseUrl;
+        lastError = Exception(
+          '$baseUrl/health returned ${response.statusCode}',
+        );
+      } catch (error) {
+        lastError = error;
+      }
+    }
+    throw Exception('No API host responded. Last error: $lastError');
+  }
+
   Future<List<Vehicle>> fetchVehicles() async {
     final rows = await _getList('/vehicles');
     return rows.map((row) => _vehicleFromJson(row)).toList();
@@ -55,6 +73,9 @@ class CampusRemoteDataSource {
     Object? lastError;
     for (final baseUrl in apiBaseUrls.where((url) => url.isNotEmpty)) {
       try {
+        await http
+            .get(Uri.parse('$baseUrl/health'))
+            .timeout(const Duration(seconds: 4));
         final response = await http
             .get(Uri.parse('$baseUrl$path'))
             .timeout(const Duration(seconds: 4));
@@ -68,7 +89,7 @@ class CampusRemoteDataSource {
             .whereType<Map<String, dynamic>>()
             .toList();
       } catch (error) {
-        lastError = error;
+        lastError = '$baseUrl$path failed: $error';
       }
     }
     throw Exception('Backend is not reachable. $lastError');
@@ -85,6 +106,8 @@ Vehicle _vehicleFromJson(Map<String, dynamic> json) {
     speed: json['speed'] is num ? json['speed'] as num : 0,
     status: '${json['status'] ?? 'Offline'}',
     students: json['students'] is num ? (json['students'] as num).toInt() : 0,
+    x: json['x'] is num ? json['x'] as num : 50,
+    y: json['y'] is num ? json['y'] as num : 50,
   );
 }
 
@@ -102,6 +125,10 @@ Student _studentFromJson(Map<String, dynamic> json) {
     vehicle:
         '${json['vehicle'] ?? json['vehicle_code'] ?? json['vehicleId'] ?? 'Unassigned'}',
     area: '${json['area'] ?? json['address'] ?? ''}',
+    route: '${json['routeName'] ?? json['route'] ?? json['routeCode'] ?? '-'}',
+    monthlyDue: json['monthlyDue'] is num
+        ? json['monthlyDue'] as num
+        : num.tryParse('${json['monthlyDue'] ?? 0}') ?? 0,
   );
 }
 

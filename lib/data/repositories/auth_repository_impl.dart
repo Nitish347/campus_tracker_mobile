@@ -57,9 +57,9 @@ class AuthRepositoryImpl implements AuthRepository {
           (driver) => onlyDigits(driver.phone) == normalizedPhone,
         ),
       };
-    } catch (_) {
+    } catch (error) {
       throw Exception(
-        'Backend is not reachable from this device. Check API host/IP and make sure backend is running.',
+        'Backend check failed: ${error.toString().replaceFirst('Exception: ', '')}',
       );
     }
   }

@@ -96,9 +96,10 @@ class SessionGate extends StatelessWidget {
 
         if (session.role == UserRole.parent) {
           return BlocProvider(
-            create: (_) =>
-                ParentBloc(context.read<CampusRepository>())
-                  ..add(ParentStarted()),
+            create: (_) => ParentBloc(
+              context.read<CampusRepository>(),
+              parentPhone: session.phone,
+            )..add(ParentStarted()),
             child: const ParentHomePage(),
           );
         }

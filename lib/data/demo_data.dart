@@ -12,6 +12,8 @@ const demoVehicles = [
     speed: 38,
     status: 'On route',
     students: 22,
+    x: 62,
+    y: 35,
   ),
   Vehicle(
     id: 'BUS-07',
@@ -21,6 +23,8 @@ const demoVehicles = [
     speed: 24,
     status: 'On route',
     students: 18,
+    x: 30,
+    y: 63,
   ),
   Vehicle(
     id: 'VAN-02',
@@ -30,6 +34,8 @@ const demoVehicles = [
     speed: 0,
     status: 'At school',
     students: 12,
+    x: 50,
+    y: 74,
   ),
 ];
 
@@ -43,16 +49,20 @@ const demoStudents = [
     secondaryPhone: '7568089869',
     vehicle: 'BUS-04',
     area: 'Burmese Colony',
+    route: 'North Loop',
+    monthlyDue: 2800,
   ),
   Student(
     id: 2,
     name: 'Aryadit Agarwal',
     regNo: 'JPIS/4768/23',
     className: 'Grade 4',
-    phone: '9829919869',
+    phone: '7568089869',
     secondaryPhone: '',
     vehicle: 'BUS-04',
     area: 'Adarsh Nagar',
+    route: 'North Loop',
+    monthlyDue: 2800,
   ),
   Student(
     id: 3,
@@ -63,6 +73,8 @@ const demoStudents = [
     secondaryPhone: '9928889228',
     vehicle: 'BUS-07',
     area: 'Adarsh Nagar',
+    route: 'East Park',
+    monthlyDue: 2600,
   ),
 ];
 

@@ -8,6 +8,8 @@ class Student {
     required this.secondaryPhone,
     required this.vehicle,
     required this.area,
+    required this.route,
+    required this.monthlyDue,
   });
 
   final int id;
@@ -18,4 +20,6 @@ class Student {
   final String secondaryPhone;
   final String vehicle;
   final String area;
+  final String route;
+  final num monthlyDue;
 }
