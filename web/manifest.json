@@ -1,6 +1,6 @@
 {
-    "name": "campus_tracker_mobile",
-    "short_name": "campus_tracker_mobile",
+    "name": "Adimove",
+    "short_name": "Adimove",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

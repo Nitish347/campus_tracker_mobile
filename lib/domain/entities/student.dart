@@ -10,6 +10,7 @@ class Student {
     required this.area,
     required this.route,
     required this.monthlyDue,
+    required this.branch,
   });
 
   final int id;
@@ -22,4 +23,9 @@ class Student {
   final String area;
   final String route;
   final num monthlyDue;
+
+  /// JPC or JPIC, set by the admin. Decides which fee portal the parent is
+  /// sent to, so an empty value must show no payment button at all rather
+  /// than guessing one.
+  final String branch;
 }

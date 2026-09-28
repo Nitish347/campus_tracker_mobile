@@ -1,8 +1,15 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <!-- Android 13 (API 33) and above. Without this declaration the runtime
+         request in PushNotifications.init() has nothing to ask for: no dialog
+         is shown, the permission is never granted, and the OS silently drops
+         every notification. -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <application
-        android:label="campus_tracker_mobile"
+        android:label="Adimove"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
         android:usesCleartextTraffic="true">
@@ -36,6 +43,14 @@
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="${GOOGLE_MAPS_API_KEY}" />
+        <!-- Channel used for notifications delivered while the app is in the
+             background or terminated, where the OS builds the tray entry
+             itself. Must match _channelId in lib/core/push_notifications.dart,
+             otherwise Android falls back to a low-importance "Miscellaneous"
+             channel and the notification arrives silently. -->
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_channel_id"
+            android:value="campus_tracker_default" />
     </application>
     <!-- Required to query activities that can process text, see:
          https://developer.android.com/training/package-visibility and

@@ -34,6 +34,7 @@ class LoginState {
     required this.loading,
     this.error,
     this.session,
+    this.devOtp,
   });
 
   factory LoginState.initial() => const LoginState(
@@ -51,6 +52,9 @@ class LoginState {
   final bool loading;
   final String? error;
   final AuthSession? session;
+  // Only set when the backend has no SMS provider configured and is running
+  // in OTP demo mode (see BUG_ANALYSIS.md, C4) — null in a real deployment.
+  final String? devOtp;
 
   LoginState copyWith({
     UserRole? role,
@@ -60,6 +64,7 @@ class LoginState {
     bool? loading,
     String? error,
     AuthSession? session,
+    String? devOtp,
     bool clearError = false,
   }) {
     return LoginState(
@@ -70,6 +75,7 @@ class LoginState {
       loading: loading ?? this.loading,
       error: clearError ? null : error ?? this.error,
       session: session ?? this.session,
+      devOtp: devOtp ?? this.devOtp,
     );
   }
 }
@@ -107,8 +113,20 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
   ) async {
     emit(state.copyWith(loading: true, clearError: true));
     try {
-      await authRepository.requestOtp(role: state.role, phone: state.phone);
-      emit(state.copyWith(loading: false, otpRequested: true, otp: ''));
+      final devOtp = await authRepository.requestOtp(
+        role: state.role,
+        phone: state.phone,
+      );
+      emit(
+        LoginState(
+          role: state.role,
+          phone: state.phone,
+          otp: '',
+          otpRequested: true,
+          loading: false,
+          devOtp: devOtp,
+        ),
+      );
     } catch (error) {
       emit(
         state.copyWith(

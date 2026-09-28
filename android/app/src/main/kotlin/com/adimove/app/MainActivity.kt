@@ -1,4 +1,4 @@
-package com.example.campus_tracker_mobile
+package com.adimove.app
 
 import io.flutter.embedding.android.FlutterActivity
 

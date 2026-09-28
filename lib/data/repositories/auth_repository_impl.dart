@@ -1,6 +1,6 @@
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../../core/app_constants.dart';
+import '../../core/api_log.dart';
 import '../../domain/entities/auth_session.dart';
 import '../../domain/entities/user_role.dart';
 import '../../domain/repositories/auth_repository.dart';
@@ -13,23 +13,33 @@ class AuthRepositoryImpl implements AuthRepository {
 
   static const _roleKey = 'auth_role';
   static const _phoneKey = 'auth_phone';
+  static const _tokenKey = 'auth_token';
 
   @override
   Future<AuthSession?> restoreSession() async {
     final prefs = await SharedPreferences.getInstance();
     final roleName = prefs.getString(_roleKey);
     final phone = prefs.getString(_phoneKey);
+    final token = prefs.getString(_tokenKey);
     final role = roleName == UserRole.driver.name
         ? UserRole.driver
         : roleName == UserRole.parent.name
         ? UserRole.parent
         : null;
-    if (role == null || phone == null) return null;
-    return AuthSession(role: role, phone: phone);
+    if (role == null || phone == null || token == null || token.isEmpty) {
+      sessionLog(
+        'restoreSession: incomplete stored session '
+        '(role=$roleName phone=${phone == null ? 'null' : 'set'} token=${token == null ? 'null' : 'set'})',
+      );
+      return null;
+    }
+    sessionLog('restoreSession: ${describeToken(token)}');
+    remoteDataSource.setSessionToken(token);
+    return AuthSession(role: role, phone: phone, token: token);
   }
 
   @override
-  Future<void> requestOtp({
+  Future<String?> requestOtp({
     required UserRole role,
     required String phone,
   }) async {
@@ -37,31 +47,10 @@ class AuthRepositoryImpl implements AuthRepository {
     if (normalizedPhone.length != 10) {
       throw Exception('Enter a valid 10 digit phone number.');
     }
-
-    final exists = await _phoneExists(role, normalizedPhone);
-
-    if (!exists) {
-      throw Exception('${role.label} phone number not found.');
-    }
-  }
-
-  Future<bool> _phoneExists(UserRole role, String normalizedPhone) async {
-    try {
-      return switch (role) {
-        UserRole.parent => (await remoteDataSource.fetchStudents()).any(
-          (student) =>
-              onlyDigits(student.phone) == normalizedPhone ||
-              onlyDigits(student.secondaryPhone) == normalizedPhone,
-        ),
-        UserRole.driver => (await remoteDataSource.fetchDrivers()).any(
-          (driver) => onlyDigits(driver.phone) == normalizedPhone,
-        ),
-      };
-    } catch (error) {
-      throw Exception(
-        'Backend check failed: ${error.toString().replaceFirst('Exception: ', '')}',
-      );
-    }
+    return switch (role) {
+      UserRole.parent => remoteDataSource.requestParentOtp(normalizedPhone),
+      UserRole.driver => remoteDataSource.requestDriverOtp(normalizedPhone),
+    };
   }
 
   @override
@@ -71,13 +60,17 @@ class AuthRepositoryImpl implements AuthRepository {
     required String otp,
   }) async {
     final normalizedPhone = onlyDigits(phone);
-    if (otp != demoOtp) {
-      throw Exception('Invalid OTP. Use $demoOtp for demo login.');
-    }
+    final token = await switch (role) {
+      UserRole.parent => remoteDataSource.verifyParentOtp(normalizedPhone, otp),
+      UserRole.driver => remoteDataSource.verifyDriverOtp(normalizedPhone, otp),
+    };
+
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_roleKey, role.name);
     await prefs.setString(_phoneKey, normalizedPhone);
-    return AuthSession(role: role, phone: normalizedPhone);
+    await prefs.setString(_tokenKey, token);
+    remoteDataSource.setSessionToken(token);
+    return AuthSession(role: role, phone: normalizedPhone, token: token);
   }
 
   @override
@@ -85,5 +78,7 @@ class AuthRepositoryImpl implements AuthRepository {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_roleKey);
     await prefs.remove(_phoneKey);
+    await prefs.remove(_tokenKey);
+    remoteDataSource.setSessionToken(null);
   }
 }

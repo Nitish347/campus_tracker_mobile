@@ -1,5 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../core/api_log.dart';
 import '../../../domain/entities/auth_session.dart';
 import '../../../domain/repositories/auth_repository.dart';
 
@@ -24,10 +25,10 @@ class SessionState {
 class SessionBloc extends Bloc<SessionEvent, SessionState> {
   SessionBloc(this.authRepository) : super(const SessionState(loading: true)) {
     on<SessionStarted>(_started);
-    on<SessionAuthenticated>(
-      (event, emit) =>
-          emit(SessionState(loading: false, session: event.session)),
-    );
+    on<SessionAuthenticated>((event, emit) {
+      sessionLog('SessionAuthenticated -> routing to ${event.session.role.name} home');
+      emit(SessionState(loading: false, session: event.session));
+    });
     on<SessionLoggedOut>(_loggedOut);
   }
 
@@ -38,6 +39,11 @@ class SessionBloc extends Bloc<SessionEvent, SessionState> {
     Emitter<SessionState> emit,
   ) async {
     final session = await authRepository.restoreSession();
+    sessionLog(
+      session == null
+          ? 'SessionStarted -> no stored session, showing login'
+          : 'SessionStarted -> restored ${session.role.name} session',
+    );
     emit(SessionState(loading: false, session: session));
   }
 
@@ -45,6 +51,11 @@ class SessionBloc extends Bloc<SessionEvent, SessionState> {
     SessionLoggedOut event,
     Emitter<SessionState> emit,
   ) async {
+    // StackTrace.current names the bloc that called onSessionExpired(), which
+    // is what tells us *which screen's* request triggered the logout.
+    sessionLog(
+      'LOGOUT dispatched. Trigger:\n${StackTrace.current.toString().split('\n').take(8).join('\n')}',
+    );
     await authRepository.logout();
     emit(const SessionState(loading: false));
   }

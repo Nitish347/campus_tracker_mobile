@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "30088263151",
+    "project_id": "campus-tracker-aac73",
+    "storage_bucket": "campus-tracker-aac73.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:30088263151:android:484f51c486ad23b644b21a",
+        "android_client_info": {
+          "package_name": "com.adimove.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDf0QkQa4TyHF1lShOuNhu6gTSE3zQbaoI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:30088263151:android:d997ebeaccc8c0d444b21a",
+        "android_client_info": {
+          "package_name": "com.campustracker.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDf0QkQa4TyHF1lShOuNhu6gTSE3zQbaoI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

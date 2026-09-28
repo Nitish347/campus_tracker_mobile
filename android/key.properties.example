@@ -1,0 +1,12 @@
+# Copy to android/key.properties and fill in. Never commit the real file --
+# it is gitignored, along with the .jks keystore it points at.
+#
+# Generate the keystore with:
+#   keytool -genkey -v -keystore adimove-upload.jks -keyalg RSA \
+#           -keysize 2048 -validity 10000 -alias adimove
+#
+storePassword=<the store password you chose>
+keyPassword=<the key password you chose>
+keyAlias=adimove
+# Absolute path, or relative to the android/app directory.
+storeFile=/absolute/path/to/adimove-upload.jks

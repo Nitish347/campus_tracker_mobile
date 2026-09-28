@@ -18,7 +18,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('Campus Tracker'), findsOneWidget);
+    expect(find.text('Adimove'), findsOneWidget);
     expect(find.text('Parent'), findsOneWidget);
     expect(find.text('Driver'), findsOneWidget);
   });
