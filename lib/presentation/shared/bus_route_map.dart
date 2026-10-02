@@ -3,6 +3,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
+import '../../core/maps_config.dart';
 import 'route_arrows.dart';
 
 /// Map for following one bus: the route it has travelled, with red direction
@@ -54,6 +55,8 @@ class _BusRouteMapState extends State<BusRouteMap> {
   // when it first loads.
   bool _movingCamera = true;
 
+  late final Future<bool> _mapsAvailable = MapsConfig.hasApiKey();
+
   @override
   void initState() {
     super.initState();
@@ -83,6 +86,23 @@ class _BusRouteMapState extends State<BusRouteMap> {
 
   @override
   Widget build(BuildContext context) {
+    return FutureBuilder<bool>(
+      future: _mapsAvailable,
+      builder: (context, snapshot) {
+        // While _mapsAvailable is still pending, snapshot.data is null --
+        // not false -- so this must wait for `done` rather than only
+        // special-casing the false result. Building the real map on that
+        // first, pre-resolution frame is exactly what still crashed iOS.
+        if (snapshot.connectionState != ConnectionState.done) {
+          return SizedBox(height: widget.height);
+        }
+        if (snapshot.data == false) return _MapUnavailable(height: widget.height);
+        return _buildMap(context);
+      },
+    );
+  }
+
+  Widget _buildMap(BuildContext context) {
     final arrow = _arrow;
     return ClipRRect(
       borderRadius: BorderRadius.circular(14),
@@ -157,6 +177,45 @@ class _BusRouteMapState extends State<BusRouteMap> {
                   color: Color(0xff0f6b55),
                 ),
               ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Shown instead of GoogleMap when the platform has no working Maps key --
+/// currently only reachable on iOS (see MapsConfig), since Android renders a
+/// watermarked map rather than failing outright.
+class _MapUnavailable extends StatelessWidget {
+  const _MapUnavailable({required this.height});
+
+  final double height;
+
+  @override
+  Widget build(BuildContext context) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(14),
+      child: Container(
+        height: height,
+        color: const Color(0xffdff4ec),
+        alignment: Alignment.center,
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: const [
+            Icon(Icons.map_outlined, size: 32, color: Color(0xff0f6b55)),
+            SizedBox(height: 8),
+            Text(
+              'Live map unavailable',
+              style: TextStyle(fontWeight: FontWeight.w900, color: Color(0xff172033)),
+            ),
+            SizedBox(height: 4),
+            Text(
+              'Maps isn\'t configured on this device yet.',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Color(0xff5b6b66), fontSize: 12),
             ),
           ],
         ),

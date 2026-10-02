@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>API_KEY</key>
+	<string>AIzaSyDVN02zdg4JDjdZ_0NQYJKVcs-vpZRO7AM</string>
+	<key>GCM_SENDER_ID</key>
+	<string>30088263151</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.adimove.app</string>
+	<key>PROJECT_ID</key>
+	<string>campus-tracker-aac73</string>
+	<key>STORAGE_BUCKET</key>
+	<string>campus-tracker-aac73.firebasestorage.app</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:30088263151:ios:bf084c3cf8b70c3744b21a</string>
+</dict>
+</plist>

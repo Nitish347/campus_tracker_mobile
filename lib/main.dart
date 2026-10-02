@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'dart:ui';
+
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
@@ -20,28 +23,51 @@ import 'presentation/driver/pages/driver_home_page.dart';
 import 'presentation/parent/bloc/parent_bloc.dart';
 import 'presentation/parent/pages/parent_home_page.dart';
 
+// Catches Dart-level crashes that would otherwise just end the run with no
+// clue why -- grep the device log for `[fatal]`. Native crashes (e.g. the
+// iOS GoogleMaps SDK aborting without a key) don't go through Dart at all;
+// those are logged separately in ios/Runner/AppDelegate.swift.
+void _logFatal(String source, Object error, StackTrace stack) {
+  debugPrint('[fatal] $source: $error');
+  debugPrint('[fatal] $stack');
+}
+
 Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+  runZonedGuarded(
+    () async {
+      WidgetsFlutterBinding.ensureInitialized();
 
-  // Firebase is optional at runtime — if the native config (google-services.json
-  // / GoogleService-Info.plist) isn't present yet, the app still runs, just
-  // without push delivery.
-  try {
-    await Firebase.initializeApp();
-    FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
-  } catch (error) {
-    debugPrint('Firebase not initialised (push disabled): $error');
-  }
+      FlutterError.onError = (details) {
+        _logFatal('FlutterError', details.exception, details.stack ?? StackTrace.current);
+        FlutterError.presentError(details);
+      };
+      PlatformDispatcher.instance.onError = (error, stack) {
+        _logFatal('PlatformDispatcher', error, stack);
+        return true;
+      };
 
-  final remoteDataSource = CampusRemoteDataSource();
-  final campusRepository = CampusRepositoryImpl(remoteDataSource);
-  final authRepository = AuthRepositoryImpl(remoteDataSource);
+      // Firebase is optional at runtime — if the native config
+      // (google-services.json / GoogleService-Info.plist) isn't present yet,
+      // the app still runs, just without push delivery.
+      try {
+        await Firebase.initializeApp();
+        FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
+      } catch (error) {
+        debugPrint('Firebase not initialised (push disabled): $error');
+      }
 
-  runApp(
-    CampusTrackerApp(
-      campusRepository: campusRepository,
-      authRepository: authRepository,
-    ),
+      final remoteDataSource = CampusRemoteDataSource();
+      final campusRepository = CampusRepositoryImpl(remoteDataSource);
+      final authRepository = AuthRepositoryImpl(remoteDataSource);
+
+      runApp(
+        CampusTrackerApp(
+          campusRepository: campusRepository,
+          authRepository: authRepository,
+        ),
+      );
+    },
+    (error, stack) => _logFatal('runZonedGuarded', error, stack),
   );
 }
 
