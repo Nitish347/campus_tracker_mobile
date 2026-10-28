@@ -447,6 +447,7 @@ class _DriverMapView extends StatelessWidget {
           const SectionTitle(title: 'Route map'),
           BusRouteMap(
             focus: busPosition,
+            glowing: gps?.ignition == true,
             height: 390,
             zoom: 13.5,
             trail: [

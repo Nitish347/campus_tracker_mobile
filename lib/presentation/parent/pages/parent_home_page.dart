@@ -56,6 +56,7 @@ class ParentHomePage extends StatelessWidget {
             data: state.data,
             selected: selected,
             routeTrail: state.routeTrail,
+            routeTrailLoading: state.routeTrailLoading,
           ),
           _HistoryView(data: state.data, selected: selected),
           _FeeView(data: state.data, selected: selected),
@@ -505,11 +506,13 @@ class _TrackingView extends StatelessWidget {
     required this.data,
     required this.selected,
     required this.routeTrail,
+    required this.routeTrailLoading,
   });
 
   final ParentData data;
   final Student selected;
   final List<GpsPoint> routeTrail;
+  final bool routeTrailLoading;
 
   @override
   Widget build(BuildContext context) {
@@ -543,6 +546,8 @@ class _TrackingView extends StatelessWidget {
           BusRouteMap(
             focus: selectedPosition,
             subject: selected.id,
+            loading: routeTrailLoading,
+            glowing: gps?.ignition == true,
             markers: markers,
             trail: [
               for (final point in routeTrail)

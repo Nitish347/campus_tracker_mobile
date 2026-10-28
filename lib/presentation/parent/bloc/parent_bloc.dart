@@ -44,6 +44,7 @@ class ParentState {
     required this.selectedStudentId,
     this.error,
     this.routeTrail = const [],
+    this.routeTrailLoading = false,
   });
 
   factory ParentState.initial() => ParentState(
@@ -67,6 +68,9 @@ class ParentState {
   final String? error;
   /// Where the selected child's bus has been today, oldest first.
   final List<GpsPoint> routeTrail;
+  /// True from picking a child until their bus's route has loaded, so the map
+  /// shows a loader instead of the previous child's bus.
+  final bool routeTrailLoading;
 
   ParentState copyWith({
     bool? loading,
@@ -75,6 +79,7 @@ class ParentState {
     int? selectedStudentId,
     String? error,
     List<GpsPoint>? routeTrail,
+    bool? routeTrailLoading,
     bool clearError = false,
   }) {
     return ParentState(
@@ -84,6 +89,7 @@ class ParentState {
       selectedStudentId: selectedStudentId ?? this.selectedStudentId,
       error: clearError ? null : error ?? this.error,
       routeTrail: routeTrail ?? this.routeTrail,
+      routeTrailLoading: routeTrailLoading ?? this.routeTrailLoading,
     );
   }
 }
@@ -114,15 +120,24 @@ class ParentBloc extends Bloc<ParentEvent, ParentState> {
         state.copyWith(
           selectedStudentId: event.studentId,
           routeTrail: const [],
+          routeTrailLoading: true,
         ),
       );
       try {
         final routeTrail = await _loadRouteTrail(event.studentId);
         // Ignore a reply that arrives after the parent picked someone else.
-        if (routeTrail != null && state.selectedStudentId == event.studentId) {
-          emit(state.copyWith(routeTrail: routeTrail));
+        if (state.selectedStudentId == event.studentId) {
+          emit(
+            state.copyWith(
+              routeTrail: routeTrail,
+              // Loaded, even if the route failed to: the map still has the
+              // bus, and a loader that never ends is worse than no route.
+              routeTrailLoading: false,
+            ),
+          );
         }
       } on SessionExpiredException {
+        emit(state.copyWith(routeTrailLoading: false));
         onSessionExpired();
       }
     });
