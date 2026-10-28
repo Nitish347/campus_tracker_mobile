@@ -379,6 +379,27 @@ class CampusRemoteDataSource {
       },
     ).query;
     final payload = await _authorizedGetMap('$path?$query');
+
+    // The backend's `roadPath` is the same trip snapped to the streets, so the
+    // line follows roads instead of cutting straight between GPS fixes. It
+    // carries only coordinates, which is all the route line and its direction
+    // arrows read; the raw positions are the fallback when it is empty.
+    final road = payload['roadPath'];
+    if (road is List && road.length > 1) {
+      return [
+        for (final row in road.whereType<Map<String, dynamic>>())
+          GpsPoint(
+            vehicleNo: '',
+            latitude: (row['latitude'] as num).toDouble(),
+            longitude: (row['longitude'] as num).toDouble(),
+            speed: 0,
+            ignition: false,
+            odometer: 0,
+            timestamp: DateTime.fromMillisecondsSinceEpoch(0),
+          ),
+      ];
+    }
+
     final rows = payload['positions'];
     if (rows is! List) return const [];
     return rows.whereType<Map<String, dynamic>>().map(_gpsFromJson).toList();
